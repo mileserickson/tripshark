@@ -47,8 +47,8 @@ The following data sources are available for this project:
 
 | Task | Deadline | Status
 | ---- | -------- | --------
-| Download Puget Sound GTFS data | 2016-04-08 (Friday) | Completed
-| Obtain OneBusAway API Key | 2016-04-08 (Friday) | Completed
+| Download Puget Sound GTFS data | 2016-04-08&nbsp;(Friday) | Completed
+| Obtain OneBusAway API Key | 2016-04-08&nbsp;(Friday) | Completed
 | Test OneBusAway API queries via requests.get() | 2016-04-08 (Friday) | Completed
 
 
@@ -60,8 +60,8 @@ This phase involves converting raw data into a format that is useful for our ana
 
 | Task | Deadline | Status
 | ---- | -------- | ------
-| Begin collecting GTFS-realtime data at 1-minute intervals (stored on AWS)  | 2016-04-08 (Friday)
-| Build pipeline for transforming GTFS-realtime data into actual arrival times at each bus stop | 2016-04-12 (Tuesday)
+| Begin collecting GTFS-realtime data at 1-minute intervals (stored on AWS)  | 2016-04-08&nbsp;(Friday)
+| Build pipeline for transforming GTFS-realtime data into actual arrival times at each bus stop | 2016-04-12&nbsp;(Tuesday)
 
 ## Phase 4: Modeling
 

@@ -1,4 +1,4 @@
-# tripshark: transit performance monitoring
+# TripShark: Transit Performance Revealed
 
 Miles Erickson
 April 7, 2016

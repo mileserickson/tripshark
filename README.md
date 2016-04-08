@@ -50,7 +50,7 @@ The following data sources are available for this project:
 | Download Puget Sound GTFS data | 2016-04-08&nbsp;(Friday) | Completed
 | Obtain OneBusAway API Key | 2016-04-08&nbsp;(Friday) | Completed
 | Test OneBusAway API queries via `requests.get()` | 2016-04-08 (Friday) | Completed |
-| Review OneBusAway code and documentation in detail | 2016-04-08 (Friday) | 
+| Review OneBusAway code and documentation in detail | 2016-04-08 (Friday) |
 
 
 ## Phase 3: Data Preparation
@@ -68,6 +68,7 @@ Key questions:
 | Task | Deadline | Status
 | ---- | -------- | ------
 | Begin collecting GTFS-realtime data at 1-minute intervals (stored on AWS)  | 2016-04-08 (Friday)
+| Setup OneBusAway REST API | 2016-04-11 (Monday)
 | Build pipeline: transform GTFS-realtime data into actual arrival times at each bus stop | 2016-04-12 (Tuesday)
 | Build pipeline: transform online trip plans into lists of (trip ID, origin stop ID, destination stop ID) | 2016-04-13 (Wednesday)
 
@@ -90,6 +91,10 @@ This phase will require development of an algorithm to predict expected bus arri
 | Predictive model | 2016-04-15 (Friday) |
 
 ## Phase 5: Evaluation
+
+This phase provides an opportunity to assess the results of the Modeling phase and determine their suitability for use in fulfilling the business objectives. I propose to involve Ming directly in this process via a scheduled one-on-one review session.
+
+### Evaluation Milestones
 
 | Task | Deadline | Status
 | ---- | -------- | ------
@@ -114,3 +119,11 @@ In the deployment phase, I expect to deliver a web site at http://tripshark.net/
 | Basic web application (functional/unstyled) | 2016-04-19 (Tuesday)
 | Simulated trip plan visualizations | 2016-04-20 (Wednesday) |
 | Pretty web application (templates/graphs) | 2016-04-21 (Thursday) |
+
+## Risks/Challenges
+
+* Vehicle location data is missing for a significant proportion of bus trips (at least 10%) due to problems with the proprietary equipment used to track and report vehicle locations. This will result in data gaps that will need to be imputed.
+
+* I will need to make use of the existing [OneBusAway REST API](http://developer.onebusaway.org/modules/onebusaway-application-modules/current/api/where/index.html) code base in order to build the proposed data pipeline. This code base is well-documented, including detailed setup instructions, but it is possible that I will encounter unforeseen challenges in its deployment. (Obviously, experience gained in my past life as a systems engineer is essential to this part of the project.)
+
+* This project will generate a potentially large amount of data to be stored and queried on AWS. I will need to make careful and deliberate decisions about how to store and manage this data.

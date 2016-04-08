@@ -49,7 +49,7 @@ The following data sources are available for this project:
 | ---- | -------- | --------
 | Download Puget Sound GTFS data | 2016-04-08&nbsp;(Friday) | Completed
 | Obtain OneBusAway API Key | 2016-04-08&nbsp;(Friday) | Completed
-| Test OneBusAway API queries via requests.get() | 2016-04-08 (Friday) | Completed
+| Test OneBusAway API queries via `requests.get()` | 2016-04-08 (Friday) | Completed
 
 
 ## Phase 3: Data Preparation

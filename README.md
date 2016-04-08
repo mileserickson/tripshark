@@ -56,30 +56,60 @@ The following data sources are available for this project:
 
 This phase involves converting raw data into a format that is useful for our analysis. This will involve creating a potentially large archival dataset to be stored on Amazon Web Services for subsequent analysis.
 
+Crucial to this phase is the prior art embodied in the open-source [OneBusAway](https://github.com/OneBusAway) project, which provides the machinery to ingest real-time vehicle location data and convert it into projected and actual arrival times at any bus stop.
+
+Key questions:
+* How large would the dataset become if it included arrival times for every trip at every stop?
+* If this would be too large, would it be preferable to subset the data by sub-region or by transfer points?
+
 ### Data Preparation Milestones
 
 | Task | Deadline | Status
 | ---- | -------- | ------
-| Begin collecting GTFS-realtime data at 1-minute intervals (stored on AWS)  | 2016-04-08&nbsp;(Friday)
-| Build pipeline for transforming GTFS-realtime data into actual arrival times at each bus stop | 2016-04-12&nbsp;(Tuesday)
+| Begin collecting GTFS-realtime data at 1-minute intervals (stored on AWS)  | 2016-04-08 (Friday)
+| Build pipeline: transform GTFS-realtime data into actual arrival times at each bus stop | 2016-04-12 (Tuesday)
+| Build pipeline: transform online trip plans into lists of (trip ID, origin stop ID, destination stop ID) | 2016-04-13 (Wednesday)
 
 ## Phase 4: Modeling
 
+This phase will require development of an algorithm to predict expected bus arrival times and to predict the reliability of transit trips.
+
+### Potential deliverables
+
+* *Trip generation model*: A function to generate random, plausible trip plan requests within King County, submit them to the Trip Planner, and return the recommended trip plan.
+* *Replay simulation model*: An algorithm to retroactively assess the reliability of any given transit trip plan via simulation ("replaying" historical transit data to predict minutes of delay and how frequently a connection is successful)
+* *Predictive model*: A machine learning algorithm to prospectively predict the expected minutes of delay for a particular transit trip arriving at a given location. Input features may include features such as day of week, past performance of prior trips on the same bus route, and generalized traffic congestion data (if available).
+
+### Modeling Milestones
+
+| Task | Deadline | Status
+| ---- | -------- | ------
+| Trip generation model | 2016-04-13 (Wednesday) |
+| Replay simulation model | 2016-04-14 (Thursday) |
+| Predictive model | 2016-04-15 (Friday) |
 
 ## Phase 5: Evaluation
 
+| Task | Deadline | Status
+| ---- | -------- | ------
+| Review models & deployment plan in one-on-one meeting with Ming | 2016-04-15 (Friday) |
 
 ## Phase 6: Deployment
 
-In this phase of the project, I will
+In the deployment phase, I expect to deliver a web site at http://tripshark.net/ including the following:
+
+* Statistics on average trip reliability and average trip delay throughout the day and week, calculated by running simulations of numerous hypothetical trip plans using the trip generation model and replay simulation model.
+
+* Visualizations showing simulated trip plans and the extent of their deviation from scheduled travel times. At minimum, this would consist of a slide deck explaining how the models work.
+
+* A web application enabling a user to request a trip plan including both scheduled and expected arrival times, and a prediction of the trip's reliability based on the distribution of prior trips' arrival and departure times.
+
 
 ### Deployment Milestones
 
-
-An algorithm to predict the reliability of any given transit trip plan. This could be done via simulation ("replaying" historical transit data to predict the trip's reliability) and/or predictive modeling.
-
-* Statistics on average trip reliability and average trip delay throughout the day and week, calculated by running simulations of hypothetical trip plans.
-
-* Visualizations showing simulated trip plans and the extent of their deviation from scheduled travel times.
-
-* A web application enabling a user to get a trip plan including both scheduled and expected arrival times, and a prediction of the trip's reliability based on the distribution of prior trips' arrival and departure times.
+| Task | Deadline | Status
+| ---- | -------- | ------
+| Trip reliability statistics | 2016-04-18 (Monday) |
+| Basic web application (functional/unstyled) | 2016-04-19 (Tuesday)
+| Simulated trip plan visualizations | 2016-04-20 (Wednesday) |
+| Pretty web application (templates/graphs) | 2016-04-21 (Thursday) |

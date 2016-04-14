@@ -1,0 +1,20 @@
+fare_id,agency_id,fare_period_id,price,descriptions,currency_type,payment_method,transfers,transfer_duration
+100,"KCM",1,0,"KCM Regular Free","USD",0,,5400
+101,"KCM",1,2.5,"KCM Regular 1 Zone","USD",0,,5400
+102,"KCM",1,2.5,"KCM Regular 2 Zone","USD",0,,5400
+110,"KCM",2,2.75,"KCM Peak 1 Zone","USD",0,,5400
+112,"KCM",2,3.25,"KCM Peak 2 Zone","USD",0,,5400
+301,"KCM",1,4.25,"Boeing","USD",0,0,0
+305,"KCM",1,4.75,"Custom High","USD",0,0,0
+501,"ST",1,2.5,"ST Regular 1 Zone","USD",0,0,0
+700,"KCM",1,4.75,"Water Taxi","USD",0,0,0
+701,"KCM",1,5.5,"Vashon Water Taxi","USD",0,0,0
+900,"KCM",1,2.5,"DART","USD",0,,5400
+300,"KCM",1,0.0,"No fare","USD",0,0,0
+302,"KCM",1,3.75,"Boeing 2 Zone","USD",0,0,0
+901,"ST",1,2.25,"LINK One Zone","USD",1,0,0
+902,"ST",1,2.50,"LINK Two Zone","USD",1,0,0
+903,"ST",1,2.75,"LINK Three Zone","USD",1,0,0
+502,"ST",1,3.50,"Bus 2 Zone","USD",0,0,0
+904,"ST",1,3.00,"LINK Four Zone","USD",1,0,0
+915,"EOS",1,2.25,"SLUS Regular","USD",1,0,0

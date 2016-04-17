@@ -3,3 +3,4 @@
 .api-key-oba.json
 .ipynb-checkpoints
 *.dbdump
+*.swp

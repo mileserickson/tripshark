@@ -4,3 +4,4 @@
 .ipynb_checkpoints
 *.dbdump
 *.swp
+nb/src

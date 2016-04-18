@@ -1,15 +1,22 @@
-"""mGTFS library"""
+"""TripShark GTFS library"""
 
 import psycopg2
 import time
 
-""" TODO database connection
-db_params = {
-    'dbname': 'gtfs',
-    'username': 'gtfs',
-    }
-conn = psycopg2.connect("dbname=gtfs user=ubuntu")
-"""
+
+QUERY_ACTIVE_VEHICLES = """
+    SELECT
+        vehicle_id AS id
+    ,   Max(timestamp) AS ts
+    FROM
+        vehicle_positions
+    WHERE
+        timestamp <= %s
+    AND
+        timestamp > %s
+    GROUP BY
+        vehicle_id
+    """
 
 
 def get_active_vehicles(when=time.time(), time_window=300, conn=None):
@@ -27,24 +34,12 @@ def get_active_vehicles(when=time.time(), time_window=300, conn=None):
     active_vehicles : list
         List of vehicle IDs with locations reported within time_window.
     """
-    return None if conn is None
+    if conn is None:
+        return None
 
-    query_active_vehicles = """
-        SELECT
-            vehicle_id AS id
-        ,   Max(timestamp) AS ts
-        FROM
-            vehicle_positions
-        WHERE
-            timestamp <= %s
-        AND
-            timestamp > %s
-        GROUP BY
-            vehicle_id
-        """
     cur = conn.cursor()
     params = (when, when-time_window)
-    cur.execute(query_active_vehicles, params)
+    cur.execute(QUERY_ACTIVE_VEHICLES, params)
     return [r[0] for r in cur.fetchall()]
 
 
@@ -62,13 +57,16 @@ def get_vehicle_location(vehicle_id, when=time.time(), conn=None):
     -------
     location : tuple
         (latitude, longitude) : (float, float)
+    timestamp : long
+        Time location reported by vehicle
     """
-    return None if conn is None
-
+    if conn is None:
+        return None
     query_vehicle_location = """
         SELECT
             position_latitude
         ,   position_longitude
+        ,   timestamp
         FROM
             vehicle_positions
         WHERE
@@ -82,10 +80,32 @@ def get_vehicle_location(vehicle_id, when=time.time(), conn=None):
     cur = conn.cursor()
     params = (when, vehicle_id)
     cur.execute(query_vehicle_location, params)
-    return cur.fetchone()
+    result = cur.fetchone()
+    location = result[:2]
+    timestamp = result[2]
+    return location, timestamp
 
 
 def get_vehicle_locations(when=time.time(), time_window=300, conn=None):
     """Return the location of all vehicles active within time_window."""
-    return None if conn is None
-
+    if conn is None:
+        return None
+    query_vehicle_locations = """
+        SELECT DISTINCT
+            vl.vehicle_id
+        ,   vl.position_latitude
+        ,   vl.position_longitude
+        ,   vl.timestamp
+        FROM
+            (""" + QUERY_ACTIVE_VEHICLES + """) av
+        INNER JOIN
+            vehicle_positions vl
+        ON
+            av.id = vl.vehicle_id
+        AND av.ts = vl.timestamp
+        """
+    cur = conn.cursor()
+    params = (when, when-time_window)
+    cur.execute(query_vehicle_locations, params)
+    result = cur.fetchall()
+    return [r for r in result]

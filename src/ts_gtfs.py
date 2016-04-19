@@ -18,6 +18,38 @@ QUERY_ACTIVE_VEHICLES = """
         vehicle_id
     """
 
+QUERY_ACTIVE_VEHICLE_LOCATIONS = """
+    SELECT DISTINCT
+        vl.vehicle_id
+    ,   vl.position_latitude
+    ,   vl.position_longitude
+    ,   vl.timestamp
+    FROM
+        (""" + QUERY_ACTIVE_VEHICLES + """) av
+    INNER JOIN
+        vehicle_positions vl
+    ON
+        av.id = vl.vehicle_id
+    AND av.ts = vl.timestamp
+    """
+
+QUERY_POSITION_REPORTS = """
+    SELECT
+    DISTINCT ON (vl.vehicle_id, vl.timestamp)
+        vl.vehicle_id AS id
+    ,   vl.position_latitude AS lat
+    ,   vl.position_longitude AS lon
+    ,   vl.timestamp AS ts
+    FROM
+        vehicle_positions vl
+    WHERE
+        vl.timestamp <= %s
+    AND
+        vl.timestamp > %s
+    ORDER BY
+        vl.timestamp
+    """
+
 
 def get_active_vehicles(when=time.time(), time_window=300, conn=None):
     """Return a list of active vehicle IDs.
@@ -77,10 +109,10 @@ def get_vehicle_location(vehicle_id, when=time.time(), conn=None):
             timestamp DESC
         LIMIT 1
         """
-    cur = conn.cursor()
-    params = (when, vehicle_id)
-    cur.execute(query_vehicle_location, params)
-    result = cur.fetchone()
+    with conn.cursor() as cur:
+        params = (when, vehicle_id)
+        cur.execute(query_vehicle_location, params)
+        result = cur.fetchone()
     location = result[:2]
     timestamp = result[2]
     return location, timestamp
@@ -90,22 +122,18 @@ def get_vehicle_locations(when=time.time(), time_window=300, conn=None):
     """Return the location of all vehicles active within time_window."""
     if conn is None:
         return None
-    query_vehicle_locations = """
-        SELECT DISTINCT
-            vl.vehicle_id
-        ,   vl.position_latitude
-        ,   vl.position_longitude
-        ,   vl.timestamp
-        FROM
-            (""" + QUERY_ACTIVE_VEHICLES + """) av
-        INNER JOIN
-            vehicle_positions vl
-        ON
-            av.id = vl.vehicle_id
-        AND av.ts = vl.timestamp
-        """
-    cur = conn.cursor()
-    params = (when, when-time_window)
-    cur.execute(query_vehicle_locations, params)
-    result = cur.fetchall()
+    with conn.cursor() as cur:
+        params = (when, when-time_window)
+        cur.execute(QUERY_ACTIVE_VEHICLE_LOCATIONS, params)
+        result = cur.fetchall()
     return [r for r in result]
+
+def get_position_reports(when=time.time(), time_window=86400, conn=None):
+        """Return all position repors reported within time_window."""
+        if conn is None:
+            return None
+        with conn.cursor() as cur:
+            params = (when, when-time_window)
+            cur.execute(QUERY_POSITION_REPORTS, params)
+            result = cur.fetchall()
+        return [r for r in result]

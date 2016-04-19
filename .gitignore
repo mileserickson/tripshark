@@ -1,6 +1,7 @@
 .DS_Store
 *.pyc
 .api-key-oba.json
-.ipynb-checkpoints
+.ipynb_checkpoints
 *.dbdump
 *.swp
+nb/src

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      #map {
+        width: 1024px;
+        height: 1024px;
+        background-color: #CCC;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+		<script>
+			function initMap() {
+				var mapDiv = document.getElementById('map');
+				var map = new google.maps.Map(mapDiv, {
+					center: {lat: 47.6, lng: -122.3},
+					zoom: 12
+				});
+				
+				//var trafficLayer = new google.maps.TrafficLayer();
+				//trafficLayer.setMap(map);
+				map.data.loadGeoJson('https://s3-us-west-2.amazonaws.com/mileserickson/route.geojson');
+				map.data.loadGeoJson('https://s3-us-west-2.amazonaws.com/mileserickson/vl.geojson');
+				map.data.setStyle({
+					icon: {
+						path: google.maps.SymbolPath.CIRCLE,
+						fillColor: 'blue',
+						fillOpacity: 0.8,
+						scale: 2,
+					},
+					strokeColor: 'purple',
+				});
+			}
+
+		</script>
+		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDrF3nAqdcYb6yS7PKGPuGu9gsEBxMXnns&callback=initMap" async defer></script>
+  </body>
+</html>

@@ -120,10 +120,11 @@ class GTFS(object):
         active_vehicles : list
             List of vehicle IDs with locations reported within time_window.
         """
-        cur = self.conn.cursor()
-        params = (when, when-time_window)
-        cur.execute(QUERY_ACTIVE_VEHICLES, params)
-        return [r[0] for r in cur.fetchall()]
+        with self.conn.cursor() as cur:
+            params = (when, when-time_window)
+            cur.execute(QUERY_ACTIVE_VEHICLES, params)
+            result = cur.fetchall()
+        return [r[0] for r in result]
 
     def get_vehicle_location(self, vehicle_id, when=time.time()):
         """Return the most recent location reported for a single vehicle.
@@ -142,7 +143,7 @@ class GTFS(object):
         timestamp : long
             Time location reported by vehicle
         """
-        with conn.cursor() as cur:
+        with self.conn.cursor() as cur:
             params = (when, vehicle_id)
             cur.execute(QUERY_VEHICLE_LOCATION, params)
             result = cur.fetchone()

@@ -35,8 +35,7 @@ QUERY_ACTIVE_VEHICLE_LOCATIONS = """
         vehicle_positions.timestamp > %s
     """
 QUERY_POSITION_REPORTS = """
-    SELECT
-    DISTINCT ON (vl.vehicle_id, vl.timestamp)
+    SELECT DISTINCT ON (vl.vehicle_id, vl.timestamp)
         vl.vehicle_id AS id
     ,   vl.position_latitude AS lat
     ,   vl.position_longitude AS lon
@@ -152,19 +151,15 @@ class GTFS(object):
         return location, timestamp
 
     def get_vehicle_locations(self, when=time.time(), time_window=300):
-        """Return the location of all vehicles active within time_window.
-        """
-
+        """Return the location of all vehicles active within time_window."""
         with self.conn.cursor() as cur:
             params = (when, when-time_window)
             cur.execute(QUERY_ACTIVE_VEHICLE_LOCATIONS, params)
-            result = cur.fetchall()
-        return [r for r in result]
+        return cur.fetchall()
 
     def get_position_reports(self, when=time.time(), time_window=86400):
             """Return all position reports reported within time_window."""
             with self.conn.cursor() as cur:
                 params = (when, when-time_window)
                 cur.execute(QUERY_POSITION_REPORTS, params)
-                result = cur.fetchall()
-            return [r for r in result]
+            return cur.fetchall()

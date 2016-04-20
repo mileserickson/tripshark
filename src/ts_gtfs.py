@@ -22,17 +22,17 @@ QUERY_ACTIVE_VEHICLES = """
         vehicle_id
     """
 QUERY_ACTIVE_VEHICLE_LOCATIONS = """
-    SELECT DISTINCT ON (vl.vehicle_id, vl.timestamp)
-        vl.vehicle_id AS id
-    ,   vl.position_latitude AS lat
-    ,   vl.position_longitude AS lon
-    ,   vl.timestamp AS ts
+    SELECT DISTINCT ON (vehicle_id, vehicle_positions.timestamp)
+        vehicle_id AS id
+    ,   position_latitude AS lat
+    ,   position_longitude AS lon
+    ,   vehicle_positions.timestamp AS ts
     FROM
-        vehicle_positions vl
+        vehicle_positions
     WHERE
-        vl.timestamp <= %s
+        vehicle_positions.timestamp <= %s
     AND
-        vl.timestamp > %s
+        vehicle_positions.timestamp > %s
     """
 QUERY_POSITION_REPORTS = """
     SELECT

@@ -123,7 +123,7 @@ class GTFS(object):
             params = (when, when-time_window)
             cur.execute(QUERY_ACTIVE_VEHICLES, params)
             result = cur.fetchall()
-        return [r[0] for r in result]
+            return [r[0] for r in result]
 
     def get_vehicle_location(self, vehicle_id, when=time.time()):
         """Return the most recent location reported for a single vehicle.
@@ -155,11 +155,11 @@ class GTFS(object):
         with self.conn.cursor() as cur:
             params = (when, when-time_window)
             cur.execute(QUERY_ACTIVE_VEHICLE_LOCATIONS, params)
-        return cur.fetchall()
+            return cur.fetchall()
 
     def get_position_reports(self, when=time.time(), time_window=86400):
             """Return all position reports reported within time_window."""
             with self.conn.cursor() as cur:
                 params = (when, when-time_window)
                 cur.execute(QUERY_POSITION_REPORTS, params)
-            return cur.fetchall()
+                return cur.fetchall()

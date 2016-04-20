@@ -22,7 +22,7 @@ QUERY_ACTIVE_VEHICLES = """
         vehicle_id
     """
 QUERY_ACTIVE_VEHICLE_LOCATIONS = """
-    SELECT DISTINCT
+    SELECT DISTINCT ON (vl.vehicle_id, vl.timestamp)
         vl.vehicle_id
     ,   vl.position_latitude
     ,   vl.position_longitude
@@ -98,9 +98,13 @@ class GTFS(object):
         self.db = self.conn.dsn.split(" ")[0].split("=")[1]
         self.user = self.conn.dsn.split(" ")[1].split("=")[1]
 
+    def __del__(self):
+        """Destroy a GTFS object."""
+        self.conn.close()
+
     def __repr__(self):
         """Return a string representation of self."""
-        return "GTFS(dbc('{}', '{}'))".format(self.db, self.user)
+        return "GTFS(dbc(dbname='{}', user='{}'))".format(self.db, self.user)
 
     def get_active_vehicles(self, when=time.time(), time_window=300):
         """Return a list of active vehicle IDs.
@@ -158,7 +162,7 @@ class GTFS(object):
         return [r for r in result]
 
     def get_position_reports(self, when=time.time(), time_window=86400):
-            """Return all position repors reported within time_window."""
+            """Return all position reports reported within time_window."""
             with self.conn.cursor() as cur:
                 params = (when, when-time_window)
                 cur.execute(QUERY_POSITION_REPORTS, params)

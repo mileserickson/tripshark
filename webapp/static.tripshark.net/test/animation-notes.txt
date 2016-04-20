@@ -1,0 +1,5 @@
+map.data.forEach(function(feature) {
+    //filter...
+    //feature ID is feature.T
+    map.data.remove(feature);
+});

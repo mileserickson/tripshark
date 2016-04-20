@@ -28,8 +28,6 @@ QUERY_ACTIVE_VEHICLE_LOCATIONS = """
     ,   vl.position_longitude
     ,   vl.timestamp
     FROM
-        (""" + QUERY_ACTIVE_VEHICLES + """) av
-    INNER JOIN
         vehicle_positions vl
     ON
         av.id = vl.vehicle_id

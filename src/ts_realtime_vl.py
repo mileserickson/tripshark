@@ -10,7 +10,7 @@ print('# Connect to AWS')
 session = boto3.Session(profile_name='tripshark_s3')
 s3client = session.client('s3', region_name='us-west-2')
 
-INTERVAL = 30  # Seconds between updates
+INTERVAL = 120  # Seconds between updates
 
 gtfs = GTFS()  # Initialize a GTFS object with a database connection
 

@@ -6,20 +6,26 @@ import geojson
 from geojson import (Feature, Point, FeatureCollection as FC)
 import boto3
 
-# Set database name and DB username
-DB_NAME = 'gtfs'
-DB_USERNAME = 'ubuntu'
+s3client = boto3.client('s3')
 
 def main():
     """Update GeoJSON vehicle location file every 30 seconds."""
-
-    gtfs = GTFS()
-
+    gtfs = GTFS()  # Initialize a GTFS object with a database connection
     while True:
         # Refresh vehicle locations
-        vl = gtfs.get_vehicle_locations(time_window=600)
+        rtvl = gtfs.get_vehicle_locations(time_window=600)
         # Create GeoJSON Feature Collection
-        fc = FC([Feature(geometry=Point((v[2], v[1])), id=v[0]) for v in vl])
+        fc = FC([Feature(geometry=Point((v[2], v[1])), id=v[0]) for v in rtvl])
         # Serialize to string
-        fc_s = geojson.dumps(fc)
+        rtvl_geojson = geojson.dumps(fc)
         # Save to Amazon S3
+        s3client.put_object(
+            ACL='public-read',
+            Body=rtvl_geojson,
+            Bucket='static.tripshark.net',
+            Key='test/rtvl.geojson',
+        )
+        
+
+if __name__ == '__main__':
+    main()

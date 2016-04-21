@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      #map {
+        width: 1024px;
+        height: 1024px;
+        background-color: #CCC;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+		<script>
+			var map;
+			function initMap() {
+				var mapDiv = document.getElementById('map');
+				map = new google.maps.Map(mapDiv, {
+					center: {lat: 47.6, lng: -122.3},
+					zoom: 12
+				});
+
+				//var trafficLayer = new google.maps.TrafficLayer();
+				//trafficLayer.setMap(map);
+				map.data.loadGeoJson('route.geojson');
+				map.data.loadGeoJson('rtvl.geojson');
+				map.data.setStyle({
+					icon: {
+						path: google.maps.SymbolPath.CIRCLE,
+						fillColor: 'blue',
+						fillOpacity: 0.7,
+						scale: 3,
+						strokeWeight: 0,
+					},
+					strokeColor: 'purple',
+					strokeOpacity: 0.5,
+                });
+                var styles = [
+                  {
+                    stylers: [
+                      { hue: "#DBA" },
+                      { saturation: -80 }
+                    ]
+                  },{
+                    featureType: "road",
+                    elementType: "geometry",
+                    stylers: [
+                      { lightness: 100 },
+                      { visibility: "simplified" }
+                    ]
+                  },
+                  /*{
+                    featureType: "road",
+                    elementType: "labels",
+                    stylers: [
+                      { visibility: "off" }
+                    ]
+                  },{
+                    featureType: "administrative",
+                    elementType: "labels",
+                    stylers: [
+                      { visibility: "off" }
+                    ]
+                  },{
+                    featureType: "poi",
+                    stylers: [
+                      { visibility: "off" }
+                    ]
+                  },{
+                    featureType: "transit",
+                    stylers: [
+                      { visibility: "off" }
+                    ]
+                  },
+                      */
+                  {
+                    featureType: "all",
+                    elementType: "labels",
+                    stylers: [
+                      { visibility: "off" }
+                    ]
+                  }
+                  ]
+                }
+                ];
+                map.setOptions({styles: styles});
+                setInterval(function(){
+                    map.data.forEach(function(feature) {
+                        map.data.remove(feature);
+                        map.data.loadGeoJson('rtvl.geojson')
+                    };
+                }, 30000)})
+			}
+
+		</script>
+		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDrF3nAqdcYb6yS7PKGPuGu9gsEBxMXnns&callback=initMap" async defer></script>
+  </body>
+</html>

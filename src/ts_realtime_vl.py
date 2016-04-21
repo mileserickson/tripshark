@@ -42,7 +42,7 @@ def repeat_fn(fn, interval):
     while True:
         starttime = time.time()
         fn()
-        elapsed_time = tim2e.time() - starttime
+        elapsed_time = time.time() - starttime
         if elapsed_time < INTERVAL:
             time.sleep(INTERVAL - elapsed_time)
 

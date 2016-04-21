@@ -1,21 +1,22 @@
 """Realtime updater of GeoJSON vehicle location feed."""
 
 from ts_gtfs import GTFS
-import threading
 import geojson
 from geojson import (Feature, Point, FeatureCollection as FC)
 import boto3
+import time
 
 print('# Connect to AWS')
 session = boto3.Session(profile_name='tripshark_s3')
 s3client = session.client('s3', region_name='us-west-2')
 
+INTERVAL = 30  # Seconds between updates
+
 gtfs = GTFS()  # Initialize a GTFS object with a database connection
 
-def update_rtvl(interval=30.0):
-    """Update real-time vehicle locations on a schedule."""
-    print('# Schedule next update')
-    threading.Timer(interval, update_rtvl).start()
+
+def update_rtvl():
+    """Update real-time vehicle locations to an S3 bucket."""
     print('# Refresh vehicle locations')
     rtvl = gtfs.get_vehicle_locations(time_window=300)
     print('# Create GeoJSON Feature Collection')
@@ -35,5 +36,16 @@ def update_rtvl(interval=30.0):
     except:
         print("RTVL save failed")
 
+
+def repeat_fn(fn, interval):
+    """Call fn() at interval (seconds), or as frequently as possible."""
+    while True:
+        starttime = time.time()
+        fn()
+        elapsed_time = tim2e.time() - starttime
+        if elapsed_time < INTERVAL:
+            time.sleep(INTERVAL - elapsed_time)
+
+
 if __name__ == '__main__':
-    update_rtvl()
+    repeat_fn(update_rtvl, INTERVAL)

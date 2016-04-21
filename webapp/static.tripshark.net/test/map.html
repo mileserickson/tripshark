@@ -23,7 +23,7 @@
 				//var trafficLayer = new google.maps.TrafficLayer();
 				//trafficLayer.setMap(map);
 				map.data.loadGeoJson('route.geojson');
-				map.data.loadGeoJson('vl.geojson');
+				map.data.loadGeoJson('rtvl.geojson');
 				map.data.setStyle({
 					icon: {
 						path: google.maps.SymbolPath.CIRCLE,
@@ -48,7 +48,8 @@
                       { lightness: 100 },
                       { visibility: "simplified" }
                     ]
-                  },{
+                  },
+                  /*{
                     featureType: "road",
                     elementType: "labels",
                     stylers: [
@@ -70,21 +71,25 @@
                     stylers: [
                       { visibility: "off" }
                     ]
-                  },{
+                  },
+                      */
+                  {
                     featureType: "all",
                     elementType: "labels",
                     stylers: [
                       { visibility: "off" }
                     ]
-                  },{
-                  featureType: "road",
-                  elementType: "labels",
-                  stylers: [
-                    { visibility: "off" }
+                  }
                   ]
                 }
                 ];
                 map.setOptions({styles: styles});
+                setInterval(function(){
+                    map.data.forEach(function(feature) {
+                        map.data.remove(feature);
+                        map.data.loadGeoJson('rtvl.geojson')
+                    };
+                }, 30000)})
 			}
 
 		</script>

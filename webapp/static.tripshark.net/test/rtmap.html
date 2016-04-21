@@ -12,7 +12,7 @@
   <body>
     <div id="map"></div>
 		<script>
-			var map;
+			var map, gj;
 			function initMap() {
 				var mapDiv = document.getElementById('map');
 				map = new google.maps.Map(mapDiv, {
@@ -80,17 +80,21 @@
                       { visibility: "off" }
                     ]
                   }
-                  ]
-                }
                 ];
                 map.setOptions({styles: styles});
                 setInterval(function(){
-                    map.data.forEach(function(feature) {
-                        map.data.remove(feature);
-                        map.data.loadGeoJson('rtvl.geojson')
-                    };
-                }, 30000)})
-			}
+                    var promise = $.getJSON('rtvl.geojson');
+                    promise.then(function(data) {
+                        gj = data;
+                        map.data.forEach(function(feature) {
+                            map.data.remove(feature);
+                        });
+                        map.data.addGeoJson(gj, {idPropertyName:"id"});
+                    });
+
+
+                }, 30000)
+            }
 
 		</script>
 		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDrF3nAqdcYb6yS7PKGPuGu9gsEBxMXnns&callback=initMap" async defer></script>

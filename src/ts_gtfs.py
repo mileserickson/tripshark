@@ -21,8 +21,9 @@ QUERY_ACTIVE_VEHICLES = """
     GROUP BY
         vehicle_id
     """
+
 QUERY_ACTIVE_VEHICLE_LOCATIONS = """
-    SELECT DISTINCT ON (vehicle_id, vehicle_positions.timestamp)
+    SELECT DISTINCT ON (vehicle_id)
         vehicle_positions.vehicle_id AS id
     ,   vehicle_positions.position_latitude AS lat
     ,   vehicle_positions.position_longitude AS lon
@@ -33,7 +34,11 @@ QUERY_ACTIVE_VEHICLE_LOCATIONS = """
         vehicle_positions.timestamp <= %s
     AND
         vehicle_positions.timestamp > %s
+    ORDER BY
+        vehicle_positions.vehicle_id,
+        vehicle_positions.timestamp DESC
     """
+
 QUERY_POSITION_REPORTS = """
     SELECT DISTINCT ON (vl.vehicle_id, vl.timestamp)
         vl.vehicle_id AS id
@@ -152,19 +157,7 @@ class GTFS(object):
 
     def get_vehicle_locations(self, when=time.time(), time_window=300):
         """Return the location of all vehicles active within time_window."""
-        QUERY_ACTIVE_VEHICLE_LOCATIONS = """
-            SELECT DISTINCT ON (vehicle_id, vehicle_positions.timestamp)
-                vehicle_positions.vehicle_id AS id
-            ,   vehicle_positions.position_latitude AS lat
-            ,   vehicle_positions.position_longitude AS lon
-            ,   vehicle_positions.timestamp AS ts
-            FROM
-                vehicle_positions
-            WHERE
-                vehicle_positions.timestamp <= %s
-            AND
-                vehicle_positions.timestamp > %s
-            """
+
         with self.conn.cursor() as cur:
             params = [when, when-time_window]
             cur.execute(QUERY_ACTIVE_VEHICLE_LOCATIONS, params)

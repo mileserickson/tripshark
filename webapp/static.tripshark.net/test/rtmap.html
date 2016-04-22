@@ -10,91 +10,93 @@
     </style>
   </head>
   <body>
+    <script src="jquery-2.2.3.min.js"></script>
     <div id="map"></div>
 		<script>
 			var map, gj;
-			function initMap() {
-				var mapDiv = document.getElementById('map');
-				map = new google.maps.Map(mapDiv, {
-					center: {lat: 47.6, lng: -122.3},
-					zoom: 12
-				});
+			function get_rtvl(){
+				var promise = $.getJSON('rtvl.geojson');
+				promise.then(function(data) {
+					gj = data;
+					new_buses = gj.features;
+					var new_bus = new_buses.pop();
+					var old_lat, old_lon, old_geo, new_lat, new_lon, new_geo;
+					while (typeof new_bus != 'undefined') {
+						old_bus = map.data.getFeatureById(new_bus.id)
+						if (typeof old_bus != 'undefined') {
+							new_lon = new_bus.geometry.coordinates[0];
+							new_lat = new_bus.geometry.coordinates[1];
+							old_geo = old_bus.getGeometry().get();
+							old_lon = old_geo.lng();
+							old_lat = old_geo.lat();
+							if (old_lat != new_lat || old_lon != new_lon) {
+								new_geo = {'lng': new_bus.geometry.coordinates[0], 'lat': new_bus.geometry.coordinates[1]}
+								old_bus.setGeometry(new_geo);
+								console.log('moved ' + new_bus.id)
+							}
+							new_bus = null;
+							} else {
+								map.data.addGeoJson(new_bus);
+								console.log('added ' + new_bus.id)
+							}
+							new_bus = new_buses.pop();
+						}
+					});
+				}
+				function initMap() {
+					var mapDiv = document.getElementById('map');
+					map = new google.maps.Map(mapDiv, {
+						center: {lat: 47.6, lng: -122.3},
+						zoom: 12
+					});
+					get_rtvl();
+				  infoWindow = new google.maps.InfoWindow({content: ""});
 
-				//var trafficLayer = new google.maps.TrafficLayer();
-				//trafficLayer.setMap(map);
-				map.data.loadGeoJson('route.geojson');
-				map.data.loadGeoJson('rtvl.geojson');
-				map.data.setStyle({
-					icon: {
-						path: google.maps.SymbolPath.CIRCLE,
-						fillColor: 'blue',
-						fillOpacity: 0.7,
-						scale: 3,
-						strokeWeight: 0,
-					},
-					strokeColor: 'purple',
-					strokeOpacity: 0.5,
-                });
-                var styles = [
-                  {
-                    stylers: [
-                      { hue: "#DBA" },
-                      { saturation: -80 }
-                    ]
-                  },{
-                    featureType: "road",
-                    elementType: "geometry",
-                    stylers: [
-                      { lightness: 100 },
-                      { visibility: "simplified" }
-                    ]
-                  },
-                  /*{
-                    featureType: "road",
-                    elementType: "labels",
-                    stylers: [
-                      { visibility: "off" }
-                    ]
-                  },{
-                    featureType: "administrative",
-                    elementType: "labels",
-                    stylers: [
-                      { visibility: "off" }
-                    ]
-                  },{
-                    featureType: "poi",
-                    stylers: [
-                      { visibility: "off" }
-                    ]
-                  },{
-                    featureType: "transit",
-                    stylers: [
-                      { visibility: "off" }
-                    ]
-                  },
-                      */
-                  {
-                    featureType: "all",
-                    elementType: "labels",
-                    stylers: [
-                      { visibility: "off" }
-                    ]
-                  }
-                ];
-                map.setOptions({styles: styles});
-                setInterval(function(){
-                    var promise = $.getJSON('rtvl.geojson');
-                    promise.then(function(data) {
-                        gj = data;
-                        map.data.forEach(function(feature) {
-                            map.data.remove(feature);
-                        });
-                        map.data.addGeoJson(gj, {idPropertyName:"id"});
-                    });
-
-
-                }, 30000)
-            }
+					map.data.addListener('click', function(event) {
+						//show an infowindow on click   
+						infoWindow.setContent('<div style="line-height:1.35;overflow:hidden;white-space:nowrap;"> Vehicle #' + event.feature.getId() + '</div>');
+						var anchor = new google.maps.MVCObject();
+						anchor.set("position",event.latLng);
+						infoWindow.open(map,anchor);
+					});
+					//var trafficLayer = new google.maps.TrafficLayer();
+					//trafficLayer.setMap(map);
+					/* map.data.loadGeoJson('route.geojson'); */
+					map.data.setStyle({
+						icon: {
+							path: google.maps.SymbolPath.CIRCLE,
+							fillColor: 'blue',
+							fillOpacity: 0.7,
+							scale: 3,
+							strokeWeight: 0,
+						},
+						strokeColor: 'purple',
+						strokeOpacity: 0.5,
+					});
+					var styles = [
+						{
+							stylers: [
+									{ hue: "#DBA" },
+									{ saturation: -80 }
+								]
+						},{
+							featureType: "road",
+							elementType: "geometry",
+							stylers: [
+								{ lightness: 100 },
+								{ visibility: "simplified" }
+							]
+						},{
+							featureType: "all",
+							elementType: "labels",
+							stylers: [
+								{ visibility: "off" }
+							]
+						}
+					];
+					map.setOptions({styles: styles});
+					setInterval(get_rtvl, 30000)
+				}
 
 		</script>
 		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDrF3nAqdcYb6yS7PKGPuGu9gsEBxMXnns&callback=initMap" async defer></script>

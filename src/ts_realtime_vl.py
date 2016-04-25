@@ -18,7 +18,7 @@ gtfs = GTFS()  # Initialize a GTFS object with a database connection
 def update_rtvl():
     """Update real-time vehicle locations to an S3 bucket."""
     print('# Refresh vehicle locations')
-    rtvl = gtfs.get_vehicle_locations(time_window=300)
+    rtvl = gtfs.get_vehicle_locations(when=time.time(), time_window=300)
     print('# Create GeoJSON Feature Collection')
     fc = FC([Feature(geometry=Point((v[2], v[1])), id=v[0],
                      properties={'ts': v[3]}) for v in rtvl])

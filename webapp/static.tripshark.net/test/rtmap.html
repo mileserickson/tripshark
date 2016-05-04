@@ -13,12 +13,13 @@
     <script src="jquery-2.2.3.min.js"></script>
     <div id="map"></div>
 		<script>
-			var map, gj;
+			var map, gj, newestBus;
 			function get_rtvl(){
 				var promise = $.getJSON('rtvl.geojson');
 				promise.then(function(data) {
 					gj = data;
 					new_buses = gj.features;
+					console.log('fetched ' + new_buses.length + ' features');
 					var new_bus = new_buses.pop();
 					var old_lat, old_lon, old_geo, new_lat, new_lon, new_geo;
 					while (typeof new_bus != 'undefined') {
@@ -26,13 +27,12 @@
 						if (typeof old_bus != 'undefined') {
 							new_lon = new_bus.geometry.coordinates[0];
 							new_lat = new_bus.geometry.coordinates[1];
-							old_geo = old_bus.getGeometry().get();
-							old_lon = old_geo.lng();
-							old_lat = old_geo.lat();
-							if (old_lat != new_lat || old_lon != new_lon) {
-								new_geo = {'lng': new_bus.geometry.coordinates[0], 'lat': new_bus.geometry.coordinates[1]}
+							if (new_bus.properties['ts'] > old_bus.getProperty("ts")) {
+								new_geo = {'lng': new_bus.geometry.coordinates[0],
+												   'lat': new_bus.geometry.coordinates[1]};
 								old_bus.setGeometry(new_geo);
-								console.log('moved ' + new_bus.id)
+								old_bus.setProperty('ts', new_bus.properties['ts']);
+								console.log('moved ' + new_bus.id);
 							}
 							new_bus = null;
 							} else {
@@ -40,6 +40,13 @@
 								console.log('added ' + new_bus.id)
 							}
 							new_bus = new_buses.pop();
+						}
+					});
+					// delete positions reported more than 6 minutes ago
+					map.data.forEach(function(bus) {
+						if(Date.now()/1000 - bus.getProperty("ts") > 360) {
+							console.log('Deleting expired vehicle #' + bus.getId());
+							map.data.remove(bus);
 						}
 					});
 				}
@@ -54,7 +61,11 @@
 
 					map.data.addListener('click', function(event) {
 						//show an infowindow on click   
-						infoWindow.setContent('<div style="line-height:1.35;overflow:hidden;white-space:nowrap;"> Vehicle #' + event.feature.getId() + '</div>');
+						var busInfo = '<div style="line-height:1.35;overflow:hidden;white-space:nowrap;">' +
+							'Vehicle #' + event.feature.getId() + '<br />' +
+							new Date(event.feature.getProperty('ts')*1000) +
+							'</div>'
+						infoWindow.setContent(busInfo);
 						var anchor = new google.maps.MVCObject();
 						anchor.set("position",event.latLng);
 						infoWindow.open(map,anchor);

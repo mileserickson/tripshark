@@ -1,7 +1,9 @@
-"""TripShark GTFS library"""
+"""TripShark GTFS library."""
 
 import psycopg2
 import time
+from collections import defaultdict
+from geojson import Feature, FeatureCollection, Point, LineString
 
 # Set database name and DB username
 DB_NAME = 'gtfs'
@@ -54,6 +56,7 @@ QUERY_POSITION_REPORTS = """
     ORDER BY
         vl.timestamp
     """
+
 QUERY_VEHICLE_LOCATION = """
     SELECT
         position_latitude
@@ -70,36 +73,27 @@ QUERY_VEHICLE_LOCATION = """
     LIMIT 1
     """
 
+
 def dbc(dbname=DB_NAME, user=DB_USERNAME):
-    """Return a database connection.
-
-    Parameters
-    ----------
-    dbname : string
-    user : string
-        PostgreSQL database name and username.
-
-    Returns
-    -------
-    conn : psycopg2.extensions.connection
+    """Return a psql database connection.
 
     Examples
     --------
-    >>> with get_db_connection() as conn:
-    >>>     result = type(c), c.closed
-    >>> result
-    (psycopg2.extensions.connection, 0)
+    >>> type(dbc())
+    psycopg2.extensions.connection
     """
     return psycopg2.connect("dbname={} user={}".format(DB_NAME, DB_USERNAME))
 
 
 class GTFS(object):
-    """GTFS database connection"""
+    """Model a transit system's GTFS & GTFS-RT feeds."""
+
     def __init__(self, conn=dbc()):
         """Initialize a new GTFS object."""
         self.conn = conn
         self.db = self.conn.dsn.split(" ")[0].split("=")[1]
         self.user = self.conn.dsn.split(" ")[1].split("=")[1]
+        self.shapes = self.get_shapes()
 
     def __del__(self):
         """Destroy a GTFS object."""
@@ -157,7 +151,6 @@ class GTFS(object):
 
     def get_vehicle_locations(self, when=time.time(), time_window=300):
         """Return the location of all vehicles active within time_window."""
-
         with self.conn.cursor() as cur:
             params = [when, when-time_window]
             cur.execute(QUERY_ACTIVE_VEHICLE_LOCATIONS, params)
@@ -166,8 +159,56 @@ class GTFS(object):
             return result
 
     def get_position_reports(self, when=time.time(), time_window=86400):
-            """Return all position reports reported within time_window."""
-            with self.conn.cursor() as cur:
-                params = (when, when-time_window)
-                cur.execute(QUERY_POSITION_REPORTS, params)
-                return cur.fetchall()
+        """Return all position reports reported within time_window."""
+        with self.conn.cursor() as cur:
+            params = (when, when-time_window)
+            cur.execute(QUERY_POSITION_REPORTS, params)
+            return cur.fetchall()
+
+    def get_shapes(self):
+        """Return a dict of shapes as lists of points sorted in sequence."""
+        QUERY_SHAPES = """
+            SELECT
+                shapes.shape_id
+            ,   shapes.shape_pt_lat AS lat
+            ,   shapes.shape_pt_lon AS lon
+            ,   shapes.shape_pt_sequence AS seq
+            ,   shapes.shape_dist_traveled AS dist
+            FROM
+                shapes
+            ORDER BY
+                shapes.shape_id
+            ,   shapes.shape_pt_sequence
+        """
+        with self.conn.cursor() as cur:
+            cur.execute(QUERY_SHAPES)
+            result = cur.fetchall()
+        shapes = defaultdict(list)
+        for r in result:
+            shapes[r[0]].append({'coordinates': {'lat': r[1], 'lng': r[2]},
+                                'seq': r[3], 'dist': r[4]})
+        return shapes
+
+    def get_shape_feature(self, shape_id):
+        """Return a GeoJSON feature for the given shape ID."""
+        shape = self.shapes[shape_id]
+        points = ((point['coordinates']['lng'],
+                   point['coordinates']['lat']) for point in shape)
+        feature = Feature(geometry=LineString([p for p in points]),
+                          id=shape_id,
+                          className={'baseVal': 'bus_route'}
+                          # properties={'route_num': #TODO}
+                          )
+        return feature
+
+    def shape_to_s3(self, bucket_name, prefix='shape_'):
+        """Export a GTFS shape to an S3 bucket."""
+        fc = FeatureCollection([get_shape_feature(i) for i in shape_ids])
+        geojson_text = geojson.dumps(fc)
+
+    def dump_location_points():
+        """Dump all location points to a GeoJSON file."""
+        features = [Feature(geometry=Point((v[2], v[1])), id=v[0]) for v in vl]
+        fc = FeatureCollection(features)
+        with open('../data/vl.geojson', 'w') as f_out:
+            f_out.write(geojson.dumps(fc))

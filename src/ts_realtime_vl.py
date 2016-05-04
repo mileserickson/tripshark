@@ -2,7 +2,7 @@
 
 from ts_gtfs import GTFS
 import geojson
-from geojson import (Feature, Point, FeatureCollection as FC)
+from geojson import (Feature, Point, LineSting, FeatureCollection as FC)
 import boto3
 import time
 
@@ -13,7 +13,6 @@ s3client = session.client('s3', region_name='us-west-2')
 INTERVAL = 30  # Seconds between updates
 
 gtfs = GTFS()  # Initialize a GTFS object with a database connection
-
 
 def update_rtvl():
     """Update real-time vehicle locations to an S3 bucket."""

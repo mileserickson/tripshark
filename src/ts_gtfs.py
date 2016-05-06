@@ -3,7 +3,9 @@
 import psycopg2
 import time
 from collections import defaultdict
+import geojson
 from geojson import Feature, FeatureCollection, Point, LineString
+import boto3
 
 # Set database name and DB username
 DB_NAME = 'gtfs'
@@ -192,8 +194,8 @@ class GTFS(object):
     def get_shape_feature(self, shape_id):
         """Return a GeoJSON feature for the given shape ID."""
         shape = self.shapes[shape_id]
-        points = ((point['coordinates']['lng'],
-                   point['coordinates']['lat']) for point in shape)
+        points = ((float(point['coordinates']['lng']),
+                   float(point['coordinates']['lat'])) for point in shape)
         feature = Feature(geometry=LineString([p for p in points]),
                           id=shape_id,
                           className={'baseVal': 'bus_route'}
@@ -201,10 +203,29 @@ class GTFS(object):
                           )
         return feature
 
-    def shape_to_s3(self, bucket_name, prefix='shape_'):
-        """Export a GTFS shape to an S3 bucket."""
-        fc = FeatureCollection([get_shape_feature(i) for i in shape_ids])
-        geojson_text = geojson.dumps(fc)
+    def shapes_to_s3(self,
+                     bucket_name='static.tripshark.net',
+                     prefix='shapes/1/shape_'
+                     ):
+        """Export all GTFS shapes to an S3 bucket."""
+        print('# Connect to AWS')
+        session = boto3.Session(profile_name='tripshark_s3')
+        s3client = session.client('s3', region_name='us-west-2')
+        for shape_id in self.shapes.iterkeys():
+            fc = FeatureCollection([self.get_shape_feature(shape_id)])
+            keyname = prefix + str(shape_id) + ".geojson"
+            geojson_text = geojson.dumps(fc)
+            print('# Save to Amazon S3')
+            try:
+                s3client.put_object(
+                    ACL='public-read',
+                    Body=geojson_text,
+                    Bucket=bucket_name,
+                    Key=keyname,
+                )
+                print("Saved s3://static.tripshark.net/" + keyname)
+            except:
+                print("Shape save failed: " + keyname)
 
     def dump_location_points():
         """Dump all location points to a GeoJSON file."""
